@@ -1,0 +1,8 @@
+{
+  "name": "TVK Official - Tamizhaga Vettri Kazhagam",
+  "description": "A high-end, responsive political party portal for TVK featuring news updates, live voting, party leadership, and an AI vision assistant.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
