@@ -3,20 +3,79 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>TVK Official | Tamizhaga Vettri Kazhagam</title>
+    
+    <!-- Mobile App Meta -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#D41D24">
+    <meta name="mobile-web-app-capable" content="yes">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              poppins: ['Poppins', 'sans-serif'],
+              inter: ['Inter', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sar: env(safe-area-inset-right);
+            --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+        }
         body {
             font-family: 'Inter', sans-serif;
             scroll-behavior: smooth;
+            padding-top: var(--sat);
+            padding-bottom: var(--sab);
+            padding-left: var(--sal);
+            padding-right: var(--sar);
+            -webkit-tap-highlight-color: transparent;
+            transition: font-size 0.3s ease;
         }
+
+        /* High Contrast Theme */
+        .high-contrast {
+            background-color: black !important;
+            color: yellow !important;
+        }
+        .high-contrast * {
+            background-color: transparent !important;
+            color: yellow !important;
+            border-color: yellow !important;
+            text-shadow: none !important;
+            box-shadow: none !important;
+        }
+        .high-contrast a, .high-contrast button {
+            outline: 2px solid yellow !important;
+            outline-offset: 2px !important;
+            background-color: black !important;
+        }
+
+        /* Font Scaling */
+        .font-scale-normal { font-size: 16px; }
+        .font-scale-large { font-size: 18px; }
+        .font-scale-x-large { font-size: 20px; }
+
         .font-poppins {
             font-family: 'Poppins', sans-serif;
         }
         .news-ticker-animation {
             animation: ticker 30s linear infinite;
+        }
+        .news-ticker-animation:hover {
+            animation-play-state: paused;
         }
         @keyframes ticker {
             0% { transform: translateX(100%); }
@@ -32,6 +91,21 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        /* Custom scrollbar for mobile touch */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D41D24;
+            border-radius: 10px;
+        }
+
+        /* Accessibility: Outline for keyboard focus */
+        *:focus-visible {
+            outline: 3px solid #D41D24;
+            outline-offset: 2px;
+        }
     </style>
 <script type="importmap">
 {
@@ -45,7 +119,7 @@
 }
 </script>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white overflow-x-hidden">
     <div id="root"></div>
 </body>
 </html>
