@@ -12,9 +12,11 @@ export interface User {
   constituency?: string;
   joinedAt: string;
   ssoProvider?: 'GOOGLE' | 'FACEBOOK' | 'TVK_CORE';
+  isEmailVerified?: boolean;
+  isPhoneVerified?: boolean;
 }
 
-export type AppView = 'HOME' | 'DASHBOARD' | 'EVENTS' | 'MANIFESTO' | 'ADMIN' | 'POLLS' | 'LOGIN' | 'REGISTER' | 'MEDIA' | 'ABOUT' | 'ACHIEVEMENTS' | 'COMMITTEE';
+export type AppView = 'HOME' | 'DASHBOARD' | 'EVENTS' | 'MANIFESTO' | 'ADMIN' | 'POLLS' | 'LOGIN' | 'REGISTER' | 'MEDIA' | 'ABOUT' | 'ACHIEVEMENTS' | 'COMMITTEE' | 'PROFILE';
 export type Language = 'en' | 'ta' | 'te' | 'ml' | 'kn' | 'hi';
 
 export type ThemeMode = 'light' | 'dark' | 'high-contrast';
@@ -64,7 +66,7 @@ export interface VoteOption {
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
-  links?: { web?: { uri: string; title: string } }[];
+  links?: { web?: { uri?: string; title?: string } }[];
 }
 
 export interface TVKEvent {

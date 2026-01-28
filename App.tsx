@@ -18,6 +18,7 @@ import HomeCarousel from './components/HomeCarousel';
 import AboutView from './components/AboutView';
 import AchievementsView from './components/AchievementsView';
 import CommitteeView from './components/CommitteeView';
+import ProfileView from './components/ProfileView';
 import { AppView, Language, ManifestoSuggestion, TVKEvent, ManifestoPoint } from './types';
 import { getNearbyOffices } from './services/geminiService';
 import { AuthProvider, useAuth } from './components/AuthContext';
@@ -31,6 +32,7 @@ const LoginView: React.FC<{ onNavigate: (view: AppView) => void }> = ({ onNaviga
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [authType, setAuthType] = useState<'DIRECT' | 'SSO'>('DIRECT');
+  const [ssoRedirecting, setSsoRedirecting] = useState<string | null>(null);
 
   const handleDirectLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +41,6 @@ const LoginView: React.FC<{ onNavigate: (view: AppView) => void }> = ({ onNaviga
     
     const success = await login(email, password);
     if (success) {
-      // Check role to direct accordingly
       const user = await db.findUserByEmail(email);
       onNavigate(user?.role === 'ADMIN' ? 'ADMIN' : 'DASHBOARD');
     } else {
@@ -49,19 +50,50 @@ const LoginView: React.FC<{ onNavigate: (view: AppView) => void }> = ({ onNaviga
   };
 
   const handleSSO = async (provider: 'GOOGLE' | 'FACEBOOK') => {
+    setSsoRedirecting(provider);
     setIsLoading(true);
-    const success = await loginWithSSO(
-      provider === 'GOOGLE' ? 'user@gmail.com' : 'user@fb.com',
-      provider === 'GOOGLE' ? 'Google Comrade' : 'Facebook Comrade',
-      provider
-    );
-    if (success) onNavigate('DASHBOARD');
-    setIsLoading(false);
+
+    setTimeout(async () => {
+      const mockEmail = provider === 'GOOGLE' ? 'vijay.fan@gmail.com' : 'vijay.vibe@fb.com';
+      const mockName = provider === 'GOOGLE' ? 'Google Comrade' : 'Facebook Comrade';
+      const mockAvatar = provider === 'GOOGLE' 
+        ? "https://lh3.googleusercontent.com/a/ACg8ocL_GkXjO9zQ" 
+        : "https://graph.facebook.com/123/picture?type=large";
+
+      const success = await loginWithSSO(mockEmail, mockName, provider, mockAvatar);
+      
+      setSsoRedirecting(null);
+      setIsLoading(false);
+      if (success) onNavigate('DASHBOARD');
+    }, 2000);
   };
 
   return (
-    <div className="min-h-[90vh] flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4 py-20">
-      <div className="bg-white dark:bg-gray-900 p-8 md:p-14 rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 max-w-md w-full animate-in fade-in zoom-in duration-500">
+    <div className="min-h-[90vh] flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4 py-20 relative overflow-hidden">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-5 pointer-events-none">
+         <WhistleIcon className="w-full h-full" />
+      </div>
+
+      <div className="bg-white dark:bg-gray-900 p-8 md:p-14 rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 max-w-md w-full animate-in fade-in zoom-in duration-500 relative z-10">
+        
+        {ssoRedirecting && (
+          <div className="absolute inset-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl rounded-[3.5rem] flex flex-col items-center justify-center p-10 text-center animate-in fade-in duration-300">
+             <div className="w-20 h-20 mb-6 relative">
+                <div className="absolute inset-0 bg-red-600 rounded-full animate-ping opacity-20"></div>
+                <div className="relative w-full h-full bg-red-700 rounded-2xl flex items-center justify-center shadow-2xl">
+                   <img src={ssoRedirecting === 'GOOGLE' ? 'https://www.google.com/favicon.ico' : 'https://www.facebook.com/favicon.ico'} className="w-8 h-8 filter brightness-0 invert" alt="Provider" />
+                </div>
+             </div>
+             <h3 className="text-xl font-black uppercase tracking-tight text-gray-900 dark:text-white">Connecting Securely</h3>
+             <p className="text-sm text-gray-500 mt-2 font-medium">Establishing handshake with {ssoRedirecting} Identity Gateway...</p>
+             <div className="mt-8 flex gap-1">
+                <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-bounce delay-100"></span>
+                <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-bounce delay-200"></span>
+             </div>
+          </div>
+        )}
+
         <div className="text-center mb-10">
           <div className="relative mb-6 inline-block">
             <div className="absolute inset-0 bg-red-600/20 blur-2xl rounded-full"></div>
@@ -71,7 +103,6 @@ const LoginView: React.FC<{ onNavigate: (view: AppView) => void }> = ({ onNaviga
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-2">Unified Political Infrastructure</p>
         </div>
 
-        {/* Auth Type Switch */}
         <div className="flex bg-gray-100 dark:bg-gray-800 p-1.5 rounded-2xl mb-8">
           <button onClick={() => setAuthType('DIRECT')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${authType === 'DIRECT' ? 'bg-white dark:bg-gray-700 text-red-600 shadow-sm' : 'text-gray-400'}`}>Direct Login</button>
           <button onClick={() => setAuthType('SSO')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${authType === 'SSO' ? 'bg-white dark:bg-gray-700 text-red-600 shadow-sm' : 'text-gray-400'}`}>SSO Secure</button>
@@ -116,14 +147,16 @@ const LoginView: React.FC<{ onNavigate: (view: AppView) => void }> = ({ onNaviga
           <div className="space-y-4">
             <button 
               onClick={() => handleSSO('GOOGLE')}
-              className="w-full py-4 flex items-center justify-center gap-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl font-black uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-[10px] text-gray-700 dark:text-white"
+              disabled={isLoading}
+              className="w-full py-4 flex items-center justify-center gap-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl font-black uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-[10px] text-gray-700 dark:text-white disabled:opacity-50"
             >
               <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
               Continue with Google
             </button>
             <button 
               onClick={() => handleSSO('FACEBOOK')}
-              className="w-full py-4 flex items-center justify-center gap-4 bg-[#1877F2] text-white rounded-2xl font-black uppercase tracking-widest hover:opacity-90 transition-all text-[10px]"
+              disabled={isLoading}
+              className="w-full py-4 flex items-center justify-center gap-4 bg-[#1877F2] text-white rounded-2xl font-black uppercase tracking-widest hover:opacity-90 transition-all text-[10px] disabled:opacity-50"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
               Connect with Facebook
@@ -148,11 +181,57 @@ const LoginView: React.FC<{ onNavigate: (view: AppView) => void }> = ({ onNaviga
   );
 };
 
+const UserTopBar: React.FC<{ onNavigate: (view: AppView) => void }> = ({ onNavigate }) => {
+  const { user, logout } = useAuth();
+  if (!user) return null;
+
+  return (
+    <div className="bg-gray-900 border-b border-white/10 py-2.5 relative z-[100] shadow-2xl">
+      <div className="container mx-auto px-4 flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <div 
+            onClick={() => onNavigate('PROFILE')}
+            className="w-10 h-10 rounded-xl overflow-hidden border-2 border-red-600/50 cursor-pointer hover:border-red-500 transition-all shadow-lg active:scale-95"
+          >
+            <img src={user.avatar || `https://i.pravatar.cc/150?u=${user.id}`} className="w-full h-full object-cover" alt="User" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">Comrade {user.name}</span>
+            <div className="flex gap-2 mt-1">
+               <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${user.isEmailVerified ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${user.isEmailVerified ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
+                  <span className="text-[7px] font-black text-white/70 uppercase">Email {user.isEmailVerified ? 'Verified' : 'Pending'}</span>
+               </div>
+               <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${user.isPhoneVerified ? 'bg-blue-500/10 border-blue-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${user.isPhoneVerified ? 'bg-blue-500 animate-pulse' : 'bg-red-500'}`}></span>
+                  <span className="text-[7px] font-black text-white/70 uppercase">Mobile {user.isPhoneVerified ? 'Verified' : 'Pending'}</span>
+               </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-6">
+          <button 
+            onClick={() => onNavigate('PROFILE')}
+            className="text-[9px] font-black text-gray-400 uppercase tracking-widest hover:text-white transition-colors border-r border-white/10 pr-6 hidden sm:block"
+          >
+            Security Center
+          </button>
+          <button 
+            onClick={() => { logout(); onNavigate('HOME'); }}
+            className="text-[9px] font-black text-red-500 uppercase tracking-widest hover:text-red-400 transition-colors flex items-center gap-2 group"
+          >
+            Logout
+            <svg className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ManifestoHighlights: React.FC<{ onExplore: () => void; points: ManifestoPoint[] }> = ({ onExplore, points }) => {
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const [itemsPerView, setItemsPerView] = useState(1);
 
   useEffect(() => {
@@ -255,8 +334,7 @@ const AppContent: React.FC = () => {
   const t = TRANSLATIONS[language] || TRANSLATIONS.en;
 
   const loadInitialData = useCallback(async () => {
-    const [sugs, news, evs, bans, points] = await Promise.all([
-      db.getSuggestions(),
+    const [news, evs, bans, points] = await Promise.all([
       db.getTickerNews(),
       db.getEvents(),
       db.getBanners(),
@@ -277,6 +355,7 @@ const AppContent: React.FC = () => {
     if (view === 'DASHBOARD' && !isMember) { setCurrentView('LOGIN'); }
     else if (view === 'ADMIN' && !isAdmin) { setCurrentView('HOME'); }
     else if (view === 'MEDIA' && !isMember) { setCurrentView('LOGIN'); }
+    else if (view === 'PROFILE' && !isAuthenticated) { setCurrentView('LOGIN'); }
     else { setCurrentView(view); }
     setIsMobileMenuOpen(false);
     window.scrollTo(0, 0);
@@ -285,6 +364,7 @@ const AppContent: React.FC = () => {
   const renderView = () => {
     switch (currentView) {
       case 'DASHBOARD': return isMember ? <MemberDashboard /> : <LoginView onNavigate={navigateTo} />;
+      case 'PROFILE': return isAuthenticated ? <ProfileView /> : <LoginView onNavigate={navigateTo} />;
       case 'EVENTS': return <EventsView events={events} />;
       case 'MANIFESTO': return <ManifestoView onAddSuggestion={(text) => {}} />;
       case 'REGISTER': return <RegistrationForm onSuccess={() => setCurrentView('DASHBOARD')} />;
@@ -309,7 +389,7 @@ const AppContent: React.FC = () => {
       case 'LOGIN': return <LoginView onNavigate={navigateTo} />;
       default: return (
         <>
-          <div className="absolute top-24 left-1/2 -translate-x-1/2 flex gap-2 md:gap-4 z-40 px-6 py-3 bg-black/40 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-2xl">
+          <div className="absolute top-32 left-1/2 -translate-x-1/2 flex gap-2 md:gap-4 z-40 px-6 py-3 bg-black/40 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-2xl">
             {HISTORIC_ICONS.map((icon, i) => (
               <div key={i} className="w-10 h-10 md:w-16 md:h-16 rounded-xl overflow-hidden border-2 border-yellow-400 shadow-xl bg-white p-0.5 transform hover:scale-110 transition-all cursor-help" title={icon.name}>
                 <img src={icon.img} alt={icon.name} className="w-full h-full object-cover rounded-lg" />
@@ -330,6 +410,10 @@ const AppContent: React.FC = () => {
 
   return (
     <div className={`min-h-screen font-poppins transition-colors duration-300 ${theme === 'dark' || theme === 'high-contrast' ? 'bg-gray-900' : 'bg-white'}`}>
+      {/* Priority 1: Authentication Bar */}
+      {isAuthenticated && <UserTopBar onNavigate={navigateTo} />}
+      
+      {/* Priority 2: System Status */}
       <div className="bg-gray-950 text-[8px] md:text-[9px] font-black text-white/40 py-1.5 uppercase tracking-[0.3em] border-b border-white/5 overflow-hidden">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex gap-4">
@@ -370,8 +454,15 @@ const AppContent: React.FC = () => {
                 {isAdmin && (
                   <button onClick={() => navigateTo('ADMIN')} className={`font-black text-[10px] uppercase tracking-widest px-6 py-2 border-2 border-red-600 text-red-600 rounded-full hover:bg-red-600 hover:text-white transition-all shadow-lg ${currentView === 'ADMIN' ? 'bg-red-600 text-white' : ''}`}>Admin Panel</button>
                 )}
-                <button onClick={() => navigateTo('DASHBOARD')} className={`font-black text-[10px] uppercase tracking-widest px-6 py-2 bg-gray-900 dark:bg-black text-white rounded-full hover:bg-red-700 transition-colors shadow-lg ${currentView === 'DASHBOARD' ? 'bg-red-700' : ''}`}>Dashboard</button>
-                <button onClick={() => { logout(); navigateTo('HOME'); }} className="text-[9px] font-black uppercase text-gray-400 hover:text-red-600 transition-colors">Logout</button>
+                <div className="relative group">
+                  <button onClick={() => navigateTo('DASHBOARD')} className={`font-black text-[10px] uppercase tracking-widest px-6 py-2 bg-gray-900 dark:bg-black text-white rounded-full hover:bg-red-700 transition-colors shadow-lg ${currentView === 'DASHBOARD' ? 'bg-red-700' : ''}`}>Dashboard</button>
+                  <div className="absolute right-0 top-full pt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
+                    <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-2 border border-gray-100 dark:border-gray-700 min-w-[160px]">
+                      <button onClick={() => navigateTo('PROFILE')} className="w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-400 hover:text-red-600">Profile Settings</button>
+                      <button onClick={() => { logout(); navigateTo('HOME'); }} className="w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-400">Logout</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <button onClick={() => navigateTo('LOGIN')} className="font-black text-[10px] uppercase tracking-widest px-6 py-2.5 bg-red-600 text-white rounded-full hover:bg-gray-900 transition-all shadow-xl shadow-red-600/30 transform hover:scale-105 active:scale-95">Member Login</button>
@@ -407,6 +498,7 @@ const AppContent: React.FC = () => {
                     {isAdmin && (
                       <button onClick={() => navigateTo('ADMIN')} className="w-full py-5 border-2 border-red-600 text-red-600 rounded-2xl font-black uppercase tracking-widest text-sm">Admin Center</button>
                     )}
+                    <button onClick={() => navigateTo('PROFILE')} className="w-full py-5 bg-gray-100 dark:bg-gray-800 rounded-2xl font-black uppercase tracking-widest text-sm text-center">My Profile</button>
                     <button onClick={() => navigateTo('DASHBOARD')} className="w-full py-5 bg-gray-900 dark:bg-white dark:text-black text-white rounded-2xl font-black uppercase tracking-widest text-sm">Member Dashboard</button>
                     <button onClick={() => { logout(); navigateTo('HOME'); }} className="w-full text-center text-red-600 font-black uppercase tracking-widest text-xs">Logout</button>
                   </div>

@@ -61,7 +61,7 @@ const MemberDashboard: React.FC = () => {
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64 = reader.result as string;
-        await db.updateUserAvatar(user.id, base64);
+        await db.updateUser(user.id, { avatar: base64 });
         updateUser({ avatar: base64 });
         setUploading(false);
       };
@@ -71,7 +71,6 @@ const MemberDashboard: React.FC = () => {
 
   return (
     <div className="bg-[#fcfcfc] dark:bg-gray-950 min-h-screen">
-      {/* Dynamic Header with Wave Pattern */}
       <div className="bg-red-700 pt-16 pb-32 px-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <svg width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -107,10 +106,7 @@ const MemberDashboard: React.FC = () => {
 
       <div className="container mx-auto px-4 -mt-20 pb-20 relative z-20">
         <div className="grid lg:grid-cols-12 gap-8">
-          
-          {/* LEFT COLUMN: Identity & Quick Facts */}
           <div className="lg:col-span-4 space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
-            {/* Premium ID Card */}
             <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 transition-all hover:shadow-red-600/5 group">
               <div className="bg-gradient-to-br from-gray-900 to-black p-8 text-white relative h-full">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/20 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-1000"></div>
@@ -139,7 +135,14 @@ const MemberDashboard: React.FC = () => {
                   </div>
                   <div className="truncate">
                     <p className="text-2xl font-black truncate">{user?.name}</p>
-                    <p className="text-[10px] font-black text-yellow-500 uppercase tracking-widest bg-yellow-500/10 px-2 py-1 rounded-md inline-block mt-1">Verified Comrade</p>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <span className="text-[10px] font-black text-yellow-500 uppercase tracking-widest bg-yellow-500/10 px-2 py-1 rounded-md inline-block">Verified</span>
+                      <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest bg-blue-400/10 px-2 py-1 rounded-md inline-block">{user?.ssoProvider} ID</span>
+                      <div className="flex gap-1">
+                        {user?.isEmailVerified && <span className="w-2 h-2 bg-green-500 rounded-full" title="Email Verified"></span>}
+                        {user?.isPhoneVerified && <span className="w-2 h-2 bg-blue-500 rounded-full" title="Phone Verified"></span>}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -162,7 +165,6 @@ const MemberDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Official Circulars List */}
             <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
                <div className="flex justify-between items-center mb-6">
                  <h4 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white">Official Circulars</h4>
@@ -181,10 +183,7 @@ const MemberDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Search, Tools, and CTA */}
           <div className="lg:col-span-8 space-y-8">
-            
-            {/* Search Bar - Repositioned for focus */}
             <div className="bg-white dark:bg-gray-900 p-4 rounded-[2rem] shadow-xl border border-gray-100 dark:border-gray-800 animate-in fade-in slide-in-from-top-4 duration-700">
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
@@ -202,7 +201,6 @@ const MemberDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Tools Grid */}
             <div>
               <div className="flex items-baseline justify-between mb-6 px-2">
                 <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tighter uppercase">Comrade Toolkit</h3>
@@ -237,7 +235,6 @@ const MemberDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Polling Agent CTA - Redesigned */}
             <div className="bg-gradient-to-r from-red-700 to-red-600 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl group">
                <div className="absolute top-0 right-0 w-full h-full pointer-events-none opacity-20">
                  <img src="https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=800&q=80" className="w-full h-full object-cover mix-blend-overlay grayscale group-hover:scale-105 transition-transform duration-[2000ms]" />

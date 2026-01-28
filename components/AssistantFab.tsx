@@ -73,9 +73,10 @@ const AssistantFab: React.FC = () => {
                 }`}>
                   {m.content}
                 </div>
+                {/* Fixed: add link.web.uri check to handle optional properties in GroundingChunk types */}
                 {m.links && m.links.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {m.links.map((link, idx) => link.web && (
+                    {m.links.map((link, idx) => link.web && link.web.uri && (
                       <a 
                         key={idx} 
                         href={link.web.uri} 
