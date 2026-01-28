@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
-import { MANIFESTO_POINTS } from '../constants';
+import React, { useState, useEffect } from 'react';
 import WhistleIcon from './WhistleIcon';
 import { useAuth } from './AuthContext';
+import { db } from '../services/db';
+import { ManifestoPoint } from '../types';
 
 interface ManifestoViewProps {
   onAddSuggestion: (text: string) => void;
@@ -13,6 +14,15 @@ const ManifestoView: React.FC<ManifestoViewProps> = ({ onAddSuggestion }) => {
   const [showForm, setShowForm] = useState(false);
   const [suggestion, setSuggestion] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [points, setPoints] = useState<ManifestoPoint[]>([]);
+
+  useEffect(() => {
+    const loadPoints = async () => {
+      const data = await db.getManifestoPoints();
+      setPoints(data);
+    };
+    loadPoints();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,10 +50,10 @@ const ManifestoView: React.FC<ManifestoViewProps> = ({ onAddSuggestion }) => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-20">
-          {MANIFESTO_POINTS.map((point, i) => (
-            <div key={i} className="bg-white p-8 md:p-10 rounded-[2.5rem] md:rounded-[3rem] shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-500 group">
+          {points.length > 0 ? points.map((point, i) => (
+            <div key={point.id} className="bg-white p-8 md:p-10 rounded-[2.5rem] md:rounded-[3rem] shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-500 group">
               <div className="w-14 h-14 md:w-16 md:h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-8 font-black text-xl md:text-2xl group-hover:bg-red-600 group-hover:text-white transition-colors">
-                0{i + 1}
+                {String(i + 1).padStart(2, '0')}
               </div>
               <h3 className="text-xl md:text-2xl font-black mb-4 text-gray-900">{point.title}</h3>
               <p className="text-gray-600 leading-relaxed text-base md:text-lg">{point.desc}</p>
@@ -56,7 +66,11 @@ const ManifestoView: React.FC<ManifestoViewProps> = ({ onAddSuggestion }) => {
                 </div>
               </div>
             </div>
-          ))}
+          )) : (
+            <div className="col-span-full py-20 text-center bg-white rounded-[3rem] border-2 border-dashed border-gray-200">
+               <p className="text-gray-400 font-black uppercase tracking-widest">Manifesto content is being finalized by the Vision Committee.</p>
+            </div>
+          )}
         </div>
 
         {/* Dynamic Interaction Section */}

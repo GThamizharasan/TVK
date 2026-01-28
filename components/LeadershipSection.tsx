@@ -2,7 +2,11 @@
 import React from 'react';
 import { LEADERSHIP } from '../constants';
 
-const LeadershipSection: React.FC = () => {
+interface LeadershipSectionProps {
+  onViewFullCommittee: () => void;
+}
+
+const LeadershipSection: React.FC<LeadershipSectionProps> = ({ onViewFullCommittee }) => {
   return (
     <section id="leadership" className="py-20 bg-gray-900 text-white overflow-hidden">
       <div className="container mx-auto px-4">
@@ -11,7 +15,12 @@ const LeadershipSection: React.FC = () => {
             <h2 className="text-5xl font-black font-poppins mb-6">GUIDING <span className="text-yellow-400 italic">LIGHTS</span></h2>
             <p className="text-gray-400 text-lg leading-relaxed">Meet the visionaries who are driving the Tamizhaga Vettri Kazhagam towards a new dawn of social and economic prosperity.</p>
           </div>
-          <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 shadow-xl">Full Committee</button>
+          <button 
+            onClick={onViewFullCommittee}
+            className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 shadow-xl"
+          >
+            Full Committee
+          </button>
         </div>
 
         <div className="grid md:grid-cols-2 gap-12">

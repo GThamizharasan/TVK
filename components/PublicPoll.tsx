@@ -1,26 +1,30 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import WhistleIcon from './WhistleIcon';
+import { db } from '../services/db';
+import { PollData } from '../types';
 
 const PublicPoll: React.FC = () => {
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [pollData, setPollData] = useState<PollData | null>(null);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [voted, setVoted] = useState(false);
 
-  const pollData = {
-    question: "Do you believe current state policies are effectively addressing youth unemployment?",
-    options: [
-      { id: 1, label: "Strongly Agree", percentage: 12 },
-      { id: 2, label: "Agree", percentage: 18 },
-      { id: 3, label: "Neutral", percentage: 15 },
-      { id: 4, label: "Disagree", percentage: 25 },
-      { id: 5, label: "Strongly Disagree", percentage: 30 },
-    ]
-  };
+  useEffect(() => {
+    const fetchPoll = async () => {
+      const data = await db.getPollData();
+      setPollData(data);
+    };
+    fetchPoll();
+  }, []);
 
-  const handleVote = (id: number) => {
+  const handleVote = (id: string) => {
     setSelectedOption(id);
     setVoted(true);
+    // Note: We could use db.castVote here if we wanted to track actual counts, 
+    // but for the Public Opinion Poll we're displaying percentages set by admin or computed elsewhere.
   };
+
+  if (!pollData) return null;
 
   return (
     <section className="py-24 bg-gray-900 text-white border-t border-white/10">
