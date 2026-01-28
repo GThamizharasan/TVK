@@ -2,6 +2,11 @@
 import { ManifestoSuggestion, VoteOption, User, TVKEvent, Transaction, MediaAsset, ManifestoPoint, PollData, LeadershipMember, IdeologyPoint, Achievement } from '../types';
 import { MOCK_SUGGESTIONS, INITIAL_VOTES, EVENTS, HOME_BANNERS, MANIFESTO_POINTS, FULL_COMMITTEE } from '../constants';
 
+// Add password to User interface locally for DB operations if not in types
+interface DBUser extends User {
+  password?: string;
+}
+
 const STORE_KEYS = {
   SUGGESTIONS: 'tvk_db_suggestions',
   TICKER: 'tvk_db_ticker',
@@ -33,11 +38,12 @@ const initializeDB = () => {
     localStorage.setItem(STORE_KEYS.VOTES, JSON.stringify(INITIAL_VOTES));
   }
   if (!localStorage.getItem(STORE_KEYS.USERS)) {
-    const defaultAdmin: User = {
+    const defaultAdmin: DBUser = {
       id: 'admin-001',
       name: 'Admin User',
       email: 'admin@tvk.org',
       role: 'ADMIN',
+      password: 'admin12$', // Required password
       joinedAt: new Date().toISOString()
     };
     localStorage.setItem(STORE_KEYS.USERS, JSON.stringify([defaultAdmin]));
@@ -94,20 +100,29 @@ const initializeDB = () => {
 initializeDB();
 
 export const db = {
-  async getUsers(): Promise<User[]> {
+  async getUsers(): Promise<DBUser[]> {
     const data = localStorage.getItem(STORE_KEYS.USERS);
     return data ? JSON.parse(data) : [];
   },
 
-  async findUserByEmail(email: string): Promise<User | null> {
+  async findUserByEmail(email: string): Promise<DBUser | null> {
     const users = await this.getUsers();
     return users.find(u => u.email?.toLowerCase() === email.toLowerCase()) || null;
   },
 
-  async registerMember(data: Partial<User>): Promise<User> {
+  async authenticate(email: string, password?: string): Promise<DBUser | null> {
+    const users = await this.getUsers();
+    const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    if (user && user.password === password) {
+      return user;
+    }
+    return null;
+  },
+
+  async registerMember(data: Partial<DBUser> & { password?: string }): Promise<DBUser> {
     const users = await this.getUsers();
     const membershipId = `TVK-2024-${Math.floor(Math.random() * 90000) + 10000}`;
-    const newUser: User = {
+    const newUser: DBUser = {
       id: crypto.randomUUID(),
       name: data.name || 'Unknown',
       email: data.email,
@@ -115,6 +130,7 @@ export const db = {
       membershipId,
       mobile: data.mobile,
       constituency: data.constituency,
+      password: data.password, // Store password for non-SSO users
       avatar: data.avatar || `https://i.pravatar.cc/150?u=${data.email || data.mobile}`,
       joinedAt: new Date().toISOString(),
       ssoProvider: data.ssoProvider
